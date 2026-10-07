@@ -1,420 +1,489 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import {
-  LayoutDashboard,
-  BookOpen,
-  FileQuestion,
-  Users,
-  LogOut,
-  GraduationCap,
-  ClipboardList,
-  Plus,
-} from "lucide-react";
+import { useState } from "react";
 
-type Page = "dashboard" | "materi";
+type Page = "dashboard" | "materi" | "soal" | "user";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [page, setPage] = useState<Page>("dashboard");
+  const [activePage, setActivePage] = useState<Page>("dashboard");
 
   if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+    return (
+      <Login
+        onLogin={() => {
+          setIsLoggedIn(true);
+          setActivePage("dashboard");
+        }}
+      />
+    );
   }
 
   return (
-    <main className="min-h-screen bg-[#fffdf7] text-[#40373d]">
-      <Navbar
-        page={page}
-        setPage={setPage}
-        onLogout={() => {
-          setIsLoggedIn(false);
-          setPage("dashboard");
-        }}
-      />
+    <div className="min-h-screen bg-[#fffdf7] text-[#3d343b]">
 
-      {page === "dashboard" && <Dashboard setPage={setPage} />}
+      {/* NAVBAR */}
+      <nav className="mx-auto mt-5 w-[calc(100%-48px)] max-w-[1180px] h-[58px] bg-white rounded-2xl shadow-[0_3px_8px_rgba(0,0,0,0.15)] flex items-center px-5">
 
-      {page === "materi" && <TambahMateri />}
-    </main>
-  );
-}
-
-// ======================================================
-// LOGIN
-// ======================================================
-
-function LoginPage({ onLogin }: { onLogin: () => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-[#fffdf7] px-5">
-      <div className="w-full max-w-[430px] rounded-[24px] bg-[#f9dce7] px-8 py-9 shadow-[0_8px_20px_rgba(180,130,150,0.15)]">
-
-        {/* LOGO ASLI */}
-        <img
-          src="/mathventure-logo.png"
-          alt="MathVenture"
-          className="mx-auto mb-5 h-[85px] w-[85px] object-contain"
-        />
-
-        <h1 className="text-center text-[23px] font-black text-[#3f343b]">
-          Masuk ke Admin Panel
-        </h1>
-
-        {/* EMAIL */}
-        <div className="mt-6">
-          <label className="mb-2 block text-sm font-bold">
-            Email
-          </label>
-
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Masukkan Email"
-            className="h-11 w-full rounded-md border border-[#9e8e91] bg-[#fff6cf] px-4 text-sm outline-none transition focus:border-[#f23873]"
-          />
-        </div>
-
-        {/* PASSWORD */}
-        <div className="mt-5">
-          <label className="mb-2 block text-sm font-bold">
-            Password
-          </label>
-
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Masukkan Password"
-            className="h-11 w-full rounded-md border border-[#9e8e91] bg-[#fff6cf] px-4 text-sm outline-none transition focus:border-[#f23873]"
-          />
-        </div>
-
-        {/* MASUK */}
         <button
-          onClick={onLogin}
-          className="mt-7 h-12 w-full rounded-lg bg-[#f23873] text-sm font-black text-white shadow-[0_4px_0_#cf285d] transition hover:bg-[#e9326c] active:translate-y-[2px] active:shadow-none"
-        >
-          MASUK
-        </button>
-      </div>
-    </main>
-  );
-}
-
-// ======================================================
-// NAVBAR
-// ======================================================
-
-function Navbar({
-  page,
-  setPage,
-  onLogout,
-}: {
-  page: Page;
-  setPage: (page: Page) => void;
-  onLogout: () => void;
-}) {
-  return (
-    <nav className="px-5 pt-5">
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between rounded-xl bg-white px-4 py-2 shadow-[0_2px_5px_rgba(0,0,0,0.18)]">
-
-        {/* LOGO ASLI */}
-        <button
-          onClick={() => setPage("dashboard")}
-          className="flex h-11 w-11 items-center justify-center"
+          onClick={() => setActivePage("dashboard")}
+          className="w-[48px] h-[48px] flex-shrink-0"
         >
           <img
             src="/mathventure-logo.png"
             alt="MathVenture"
-            className="h-11 w-11 object-contain"
+            className="w-full h-full object-contain"
           />
         </button>
 
-        {/* MENU */}
-        <div className="hidden items-center gap-1 md:flex">
-          <NavButton
-            icon={<LayoutDashboard size={17} />}
-            text="Dashboard"
-            active={page === "dashboard"}
-            onClick={() => setPage("dashboard")}
+        <div className="flex items-center gap-9 ml-7">
+
+          <NavItem
+            label="Dashboard"
+            active={activePage === "dashboard"}
+            onClick={() => setActivePage("dashboard")}
           />
 
-          <NavButton
-            icon={<BookOpen size={17} />}
-            text="Kelola Materi"
-            active={page === "materi"}
-            onClick={() => setPage("materi")}
+          <NavItem
+            label="Kelola Materi"
+            active={activePage === "materi"}
+            onClick={() => setActivePage("materi")}
           />
 
-          <NavButton
-            icon={<FileQuestion size={17} />}
-            text="Kelola Soal"
-            onClick={() => {}}
+          <NavItem
+            label="Kelola Soal"
+            active={activePage === "soal"}
+            onClick={() => setActivePage("soal")}
           />
 
-          <NavButton
-            icon={<Users size={17} />}
-            text="Kelola User"
-            onClick={() => {}}
+          <NavItem
+            label="Kelola User"
+            active={activePage === "user"}
+            onClick={() => setActivePage("user")}
           />
+
         </div>
 
-        {/* KELUAR */}
         <button
-          onClick={onLogout}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#51474c] transition hover:text-[#f23873]"
+          onClick={() => setIsLoggedIn(false)}
+          className="ml-auto text-[16px] font-bold hover:text-[#f35b8f] transition"
         >
-          <LogOut size={17} />
           Keluar
         </button>
-      </div>
-    </nav>
+
+      </nav>
+
+
+      {/* CONTENT */}
+
+      {activePage === "dashboard" && <Dashboard />}
+
+      {activePage === "materi" && (
+        <SimplePage
+          title="Kelola Materi"
+          description="Kelola materi pembelajaran MathVenture."
+          button="Tambah Materi"
+          onBack={() => setActivePage("dashboard")}
+        />
+      )}
+
+      {activePage === "soal" && (
+        <SimplePage
+          title="Kelola Soal"
+          description="Kelola soal dan quiz MathVenture."
+          button="Tambah Soal"
+          onBack={() => setActivePage("dashboard")}
+        />
+      )}
+
+      {activePage === "user" && (
+        <SimplePage
+          title="Kelola User"
+          description="Kelola pengguna MathVenture."
+          button="Tambah User"
+          onBack={() => setActivePage("dashboard")}
+        />
+      )}
+
+    </div>
   );
 }
 
-// ======================================================
-// NAV BUTTON
-// ======================================================
 
-function NavButton({
-  icon,
-  text,
-  active = false,
+/* =====================================================
+   NAV ITEM
+===================================================== */
+
+function NavItem({
+  label,
+  active,
   onClick,
 }: {
-  icon: ReactNode;
-  text: string;
-  active?: boolean;
+  label: string;
+  active: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition ${
+      className={`relative text-[16px] font-bold whitespace-nowrap transition ${
         active
-          ? "text-[#f23873] underline decoration-2 underline-offset-4"
-          : "text-[#51474c] hover:text-[#f23873]"
+          ? "text-[#f35b8f]"
+          : "text-[#3d343b] hover:text-[#f35b8f]"
       }`}
     >
-      {icon}
-      {text}
+      {label}
+
+      {active && (
+        <span className="absolute left-0 right-0 -bottom-[10px] h-[2px] bg-[#f35b8f] rounded-full" />
+      )}
     </button>
   );
 }
 
-// ======================================================
-// DASHBOARD
-// ======================================================
 
-function Dashboard({ setPage }: { setPage: (page: Page) => void }) {
+/* =====================================================
+   LOGIN
+===================================================== */
+
+function Login({ onLogin }: { onLogin: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
+
   return (
-    <section className="mx-auto max-w-[1100px] px-6 pb-16 pt-12">
+    <main className="min-h-screen bg-[#fffdf7] flex items-center justify-center px-5">
 
-      <div className="mb-8 inline-block rounded-xl bg-[#fff1c7] px-5 py-2">
-        <h1 className="text-[28px] font-black">
-          Dashboard
-        </h1>
-      </div>
+      <div className="w-full max-w-[430px]">
 
-      {/* STAT */}
-      <div className="grid gap-6 md:grid-cols-2">
-
-        <StatCard
-          title="Total Siswa"
-          value="0"
-          icon={<GraduationCap size={32} />}
-          className="bg-[#e5d8ff]"
-          iconClass="bg-[#bda6f0]"
-        />
-
-        <StatCard
-          title="Total Materi"
-          value="0"
-          icon={<BookOpen size={32} />}
-          className="bg-[#f9d7e3]"
-          iconClass="bg-[#f5a4bc]"
-        />
-
-        <div className="flex justify-center md:col-span-2">
-          <StatCard
-            title="Total Soal"
-            value="0"
-            icon={<ClipboardList size={32} />}
-            className="w-full max-w-[430px] bg-[#d8f0ff]"
-            iconClass="bg-[#72c4a7]"
+        <div className="flex justify-center mb-6">
+          <img
+            src="/mathventure-logo.png"
+            alt="MathVenture"
+            className="w-[105px] h-[105px] object-contain"
           />
         </div>
-      </div>
 
-      {/* QUICK ACCESS */}
-      <div className="mt-12">
-        <h2 className="mb-5 text-xl font-black">
-          Kelola MathVenture
-        </h2>
+        <div className="text-center mb-8">
 
-        <div className="grid gap-5 md:grid-cols-3">
+          <h1 className="text-[30px] font-extrabold text-[#3d343b]">
+            Welcome Back!
+          </h1>
+
+          <p className="text-[14px] text-[#766d73] mt-2">
+            Masuk ke Dashboard MathVenture
+          </p>
+
+        </div>
+
+
+        <div className="bg-white rounded-3xl shadow-[0_5px_18px_rgba(0,0,0,0.10)] p-7">
+
+          <div className="mb-5">
+
+            <label className="block text-[14px] font-bold mb-2">
+              Email
+            </label>
+
+            <input
+              type="email"
+              placeholder="Masukkan email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-[46px] px-4 rounded-xl border border-[#eadfe4] outline-none focus:border-[#f35b8f] text-[14px]"
+            />
+
+          </div>
+
+
+          <div className="mb-4">
+
+            <label className="block text-[14px] font-bold mb-2">
+              Password
+            </label>
+
+            <input
+              type="password"
+              placeholder="Masukkan password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full h-[46px] px-4 rounded-xl border border-[#eadfe4] outline-none focus:border-[#f35b8f] text-[14px]"
+            />
+
+          </div>
+
+
+          <label className="flex items-center gap-2 text-[13px] text-[#766d73] mb-6 cursor-pointer">
+
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="accent-[#f35b8f]"
+            />
+
+            Ingat saya
+
+          </label>
+
 
           <button
-            onClick={() => setPage("materi")}
-            className="rounded-2xl border border-[#eadfe2] bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            onClick={onLogin}
+            className="w-full h-[48px] rounded-xl bg-[#f35b8f] text-white font-extrabold text-[15px] hover:bg-[#ed4c82] transition"
           >
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#f9dce7] text-[#f23873]">
-              <Plus size={25} />
-            </div>
-
-            <h3 className="font-black">
-              Kelola Materi
-            </h3>
-
-            <p className="mt-1 text-sm text-[#81777e]">
-              Tambah dan kelola materi matematika.
-            </p>
-          </button>
-
-          <button className="rounded-2xl border border-[#eadfe2] bg-white p-5 text-left shadow-sm">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#eee7ff]">
-              📝
-            </div>
-
-            <h3 className="font-black">
-              Kelola Soal
-            </h3>
-
-            <p className="mt-1 text-sm text-[#81777e]">
-              Buat dan kelola soal latihan siswa.
-            </p>
-          </button>
-
-          <button className="rounded-2xl border border-[#eadfe2] bg-white p-5 text-left shadow-sm">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#dff4ff]">
-              👩🏻‍🎓
-            </div>
-
-            <h3 className="font-black">
-              Kelola User
-            </h3>
-
-            <p className="mt-1 text-sm text-[#81777e]">
-              Lihat dan kelola data siswa.
-            </p>
+            MASUK KE DASHBOARD
           </button>
 
         </div>
+
       </div>
-    </section>
+
+    </main>
   );
 }
 
-// ======================================================
-// STAT CARD
-// ======================================================
 
-function StatCard({
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+function Dashboard() {
+  return (
+    <main className="px-6 pt-14 pb-14">
+
+      <div className="max-w-[760px] mx-auto">
+
+        {/* JUDUL DASHBOARD */}
+
+        <div className="inline-block bg-[#fff0b8] px-5 py-2.5 rounded-2xl mb-9">
+
+          <h1 className="text-[28px] font-extrabold text-[#3d343b]">
+            Dashboard
+          </h1>
+
+        </div>
+
+
+        {/* STATISTIK */}
+
+        <div className="grid grid-cols-2 gap-7">
+
+          {/* SISWA */}
+
+          <div className="h-[195px] rounded-2xl bg-[#ded0fa] p-6">
+
+            <img
+              src="/siswa.png"
+              alt="Siswa"
+              className="w-[58px] h-[58px] object-contain mb-3"
+            />
+
+            <p className="text-[16px] font-bold">
+              Total Siswa
+            </p>
+
+            <p className="text-[32px] leading-none font-extrabold mt-2">
+              0
+            </p>
+
+          </div>
+
+
+          {/* MATERI */}
+
+          <div className="h-[195px] rounded-2xl bg-[#f8d3df] p-6">
+
+            <img
+              src="/materi.png"
+              alt="Materi"
+              className="w-[58px] h-[58px] object-contain mb-3"
+            />
+
+            <p className="text-[16px] font-bold">
+              Total Materi
+            </p>
+
+            <p className="text-[32px] leading-none font-extrabold mt-2">
+              0
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {/* TOTAL SOAL */}
+
+        <div className="flex justify-center mt-7">
+
+          <div className="w-[345px] h-[195px] rounded-2xl bg-[#ccecf9] p-6">
+
+            <img
+              src="/soal.png"
+              alt="Soal"
+              className="w-[58px] h-[58px] object-contain mb-3"
+            />
+
+            <p className="text-[16px] font-bold">
+              Total Soal
+            </p>
+
+            <p className="text-[32px] leading-none font-extrabold mt-2">
+              0
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {/* PENGELOLAAN */}
+
+        <div className="mt-12">
+
+          <h2 className="text-[21px] font-extrabold mb-5">
+            Pengelolaan
+          </h2>
+
+
+          <div className="grid grid-cols-3 gap-4">
+
+            {/* MATERI */}
+
+            <div className="bg-white rounded-2xl p-5 shadow-[0_3px_10px_rgba(0,0,0,0.08)]">
+
+              <div className="w-[45px] h-[45px] rounded-xl bg-[#f8d3df] flex items-center justify-center mb-3">
+
+                <img
+                  src="/materi.png"
+                  alt="Materi"
+                  className="w-[32px] h-[32px] object-contain"
+                />
+
+              </div>
+
+              <p className="font-extrabold text-[14px]">
+                Kelola Materi
+              </p>
+
+              <p className="text-[11px] text-[#8b8086] mt-1">
+                Atur materi pembelajaran
+              </p>
+
+            </div>
+
+
+            {/* SOAL */}
+
+            <div className="bg-white rounded-2xl p-5 shadow-[0_3px_10px_rgba(0,0,0,0.08)]">
+
+              <div className="w-[45px] h-[45px] rounded-xl bg-[#ccecf9] flex items-center justify-center mb-3">
+
+                <img
+                  src="/soal.png"
+                  alt="Soal"
+                  className="w-[32px] h-[32px] object-contain"
+                />
+
+              </div>
+
+              <p className="font-extrabold text-[14px]">
+                Kelola Soal
+              </p>
+
+              <p className="text-[11px] text-[#8b8086] mt-1">
+                Atur soal dan quiz
+              </p>
+
+            </div>
+
+
+            {/* USER */}
+
+            <div className="bg-white rounded-2xl p-5 shadow-[0_3px_10px_rgba(0,0,0,0.08)]">
+
+              <div className="w-[45px] h-[45px] rounded-xl bg-[#ded0fa] flex items-center justify-center mb-3">
+
+                <img
+                  src="/siswa.png"
+                  alt="User"
+                  className="w-[32px] h-[32px] object-contain"
+                />
+
+              </div>
+
+              <p className="font-extrabold text-[14px]">
+                Kelola User
+              </p>
+
+              <p className="text-[11px] text-[#8b8086] mt-1">
+                Atur pengguna
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+  );
+}
+
+
+/* =====================================================
+   SIMPLE PAGE
+===================================================== */
+
+function SimplePage({
   title,
-  value,
-  icon,
-  className,
-  iconClass,
+  description,
+  button,
+  onBack,
 }: {
   title: string;
-  value: string;
-  icon: ReactNode;
-  className: string;
-  iconClass: string;
+  description: string;
+  button: string;
+  onBack: () => void;
 }) {
   return (
-    <div
-      className={`${className} relative min-h-[140px] rounded-2xl p-6 shadow-sm`}
-    >
-      <div className="flex items-start justify-between">
+    <main className="px-6 pt-14">
 
-        <div>
-          <p className="text-sm font-bold">
+      <div className="max-w-[760px] mx-auto">
+
+        <div className="inline-block bg-[#fff0b8] px-5 py-2.5 rounded-2xl mb-8">
+
+          <h1 className="text-[28px] font-extrabold">
             {title}
+          </h1>
+
+        </div>
+
+
+        <div className="bg-white rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.08)] p-7">
+
+          <p className="text-[#766d73] text-[14px] mb-6">
+            {description}
           </p>
 
-          <p className="mt-2 text-3xl font-black">
-            {value}
-          </p>
+          <button className="px-5 py-3 rounded-xl bg-[#f35b8f] text-white font-bold text-[14px]">
+            {button}
+          </button>
+
         </div>
 
-        <div
-          className={`${iconClass} flex h-12 w-12 items-center justify-center rounded-full text-white`}
-        >
-          {icon}
-        </div>
 
-      </div>
-    </div>
-  );
-}
-
-// ======================================================
-// TAMBAH MATERI
-// ======================================================
-
-function TambahMateri() {
-  const [judul, setJudul] = useState("");
-  const [deskripsi, setDeskripsi] = useState("");
-
-  return (
-    <section className="mx-auto max-w-[1100px] px-6 pb-16 pt-10">
-
-      <div className="mb-8 inline-block rounded-xl bg-[#fff1c7] px-5 py-2">
-        <h1 className="text-[27px] font-black">
-          Tambah Materi
-        </h1>
-      </div>
-
-      <div className="rounded-2xl bg-[#e4d8fa] p-6 md:p-7">
-
-        {/* JUDUL */}
-        <div>
-          <label className="mb-3 block text-sm font-black">
-            Judul Materi
-          </label>
-
-          <input
-            type="text"
-            value={judul}
-            onChange={(e) => setJudul(e.target.value)}
-            placeholder="Masukkan Judul Materi"
-            className="h-11 w-full rounded-lg border border-[#9c9298] bg-[#fffdf7] px-4 text-sm outline-none focus:border-[#f23873]"
-          />
-        </div>
-
-        {/* DESKRIPSI */}
-        <div className="mt-5">
-          <label className="mb-3 block text-sm font-black">
-            Deskripsi
-          </label>
-
-          <textarea
-            value={deskripsi}
-            onChange={(e) => setDeskripsi(e.target.value)}
-            placeholder="Isi Detail Materi"
-            rows={5}
-            className="w-full resize-none rounded-lg border border-[#9c9298] bg-[#fffdf7] px-4 py-3 text-sm outline-none focus:border-[#f23873]"
-          />
-        </div>
-
-        {/* SIMPAN */}
         <button
-          onClick={() => {
-            alert("Materi berhasil disimpan!");
-            setJudul("");
-            setDeskripsi("");
-          }}
-          className="mt-4 h-12 w-full rounded-lg bg-[#666666] text-sm font-black text-white shadow-[0_3px_0_#444] transition hover:bg-[#555] active:translate-y-[2px] active:shadow-none"
+          onClick={onBack}
+          className="mt-5 text-[#f35b8f] font-bold text-[14px]"
         >
-          SIMPAN
+          ← Kembali ke Dashboard
         </button>
 
       </div>
-    </section>
+
+    </main>
   );
 }
