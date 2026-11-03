@@ -1,43 +1,231 @@
-@import "tailwindcss";
-
+/* =========================================================
+   COLOR PALETTE (sama dengan PDF hi-fi)
+   ========================================================= */
 :root {
-  --font-inter: var(--font-inter, 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-  
-  /* Color Palette based on design specification */
-  --color-plum: #22192A;
-  --color-rose: #B3245B;
-  --color-rose-muda: #FBEAF1;
-  --color-latar: #F4F4F6;
-  --color-putih: #FFFFFF;
-  --color-garis: #E3E2E8;
-  --color-teks-utama: #1D1B22;
-  --color-teks-abu: #6B6875;
-  --color-merah: #C0302F;
-  --color-merah-muda: #FDEEEE;
-  --color-hijau: #1C7A4B;
-  --color-hijau-muda: #E7F4EC;
+  --plum: #22192a;        /* sidebar, panel kiri login */
+  --rose: #b3245b;        /* tombol utama, menu aktif */
+  --rose-dark: #951b4a;
+  --rose-soft: #fbeaf1;   /* latar ikon, label materi */
+  --bg: #f4f4f6;          /* latar halaman */
+  --white: #ffffff;       /* kartu, tabel, formulir */
+  --line: #e3e2e8;        /* garis kartu dan input */
+  --text: #1d1b22;        /* teks utama */
+  --muted: #6b6875;       /* teks abu, placeholder */
+  --red: #c0302f;         /* error */
+  --red-soft: #fdeeee;
+  --green: #1c7a4b;       /* berhasil */
+  --green-soft: #e7f4ec;
 }
 
-@theme inline {
-  --color-plum: var(--color-plum);
-  --color-rose: var(--color-rose);
-  --color-rose-muda: var(--color-rose-muda);
-  --color-latar: var(--color-latar);
-  --color-putih: var(--color-putih);
-  --color-garis: var(--color-garis);
-  --color-teks-utama: var(--color-teks-utama);
-  --color-teks-abu: var(--color-teks-abu);
-  --color-merah: var(--color-merah);
-  --color-merah-muda: var(--color-merah-muda);
-  --color-hijau: var(--color-hijau);
-  --color-hijau-muda: var(--color-hijau-muda);
-  --font-sans: var(--font-inter);
-}
+* { box-sizing: border-box; }
 
-body {
-  background-color: var(--color-latar);
-  color: var(--color-teks-utama);
-  font-family: var(--font-inter);
+html, body {
   margin: 0;
   padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
 }
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+
+/* =========================================================
+   LAYOUT ADMIN (sidebar + konten)
+   ========================================================= */
+.admin { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--plum);
+  color: #cfc8d6;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 8px 22px; margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.brand img { width: 42px; height: 42px; border-radius: 50%; }
+.brand b { display: block; color: #fff; font-size: 16px; }
+.brand span { font-size: 12.5px; color: #9c93a6; }
+
+.nav-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin-bottom: 2px;
+  border-radius: 8px; font-size: 14.5px; color: #cfc8d6;
+}
+.nav-link:hover { background: rgba(255, 255, 255, 0.05); }
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff; font-weight: 600;
+  box-shadow: inset 3px 0 0 #e2588e;
+}
+.sidebar-bottom {
+  margin-top: auto; padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.main { flex: 1; min-width: 0; }
+.topbar {
+  height: 64px; background: var(--white);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; font-weight: 600; font-size: 14px;
+}
+.topbar-user { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #4a3a55; color: #fff; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.content { padding: 28px 32px; }
+
+/* =========================================================
+   JUDUL HALAMAN
+   ========================================================= */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; margin-bottom: 22px;
+}
+.page-head h1 { font-size: 26px; line-height: 1.2; margin: 0 0 4px; font-weight: 700; }
+.page-head p { margin: 0; color: var(--muted); }
+
+/* =========================================================
+   TOMBOL
+   ========================================================= */
+.btn {
+  height: 40px; padding: 0 16px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.btn-primary { background: var(--rose); color: #fff; }
+.btn-primary:hover { background: var(--rose-dark); }
+.btn-secondary { background: var(--white); color: var(--text); border-color: var(--line); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { background: #a52827; }
+
+.btn-small {
+  height: 32px; padding: 0 12px; border-radius: 7px;
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  background: var(--white); color: var(--text); border: 1px solid var(--line);
+  display: inline-flex; align-items: center;
+}
+.btn-small.danger { color: var(--red); border-color: #f2c4c3; }
+.btn-small:hover { background: var(--bg); }
+
+/* =========================================================
+   KARTU & TABEL
+   ========================================================= */
+.card { background: var(--white); border: 1px solid var(--line); border-radius: 12px; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted);
+  padding: 11px 16px; background: #fafafb; border-bottom: 1px solid var(--line);
+}
+.table th:first-child { border-top-left-radius: 12px; }
+.table th:last-child { border-top-right-radius: 12px; text-align: right; }
+.table td { padding: 0 16px; height: 56px; border-bottom: 1px solid #eeedf1; }
+.table tr:last-child td { border-bottom: 0; }
+.table td.strong { font-weight: 600; }
+.table td.empty { text-align: center; color: var(--muted); height: 120px; }
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.tag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 9px;
+  border-radius: 6px; font-size: 12.5px; font-weight: 600;
+  background: var(--rose-soft); color: var(--rose-dark);
+}
+
+/* =========================================================
+   FORMULIR
+   ========================================================= */
+.form-card { max-width: 760px; padding: 28px 32px; }
+
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 7px; }
+.input {
+  width: 100%; height: 44px; padding: 0 14px;
+  border: 1px solid #d3d1da; border-radius: 8px;
+  background: var(--white); color: var(--text); outline: none;
+}
+.input::placeholder { color: #9a97a3; }
+.input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px #f6d9e5; }
+textarea.input { height: 150px; padding: 12px 14px; resize: vertical; }
+select.input { cursor: pointer; }
+select.input.is-empty { color: #9a97a3; }
+
+.input.error { border: 1.5px solid var(--red); box-shadow: 0 0 0 3px #fbe3e3; }
+.error-text {
+  display: flex; align-items: center; gap: 6px; margin-top: 7px;
+  font-size: 13px; font-weight: 500; color: var(--red);
+}
+
+.alert-error {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; margin-bottom: 22px; border-radius: 10px;
+  background: var(--red-soft); border: 1px solid #f2c4c3; color: #7e1e1d;
+}
+.alert-error svg { color: var(--red); flex-shrink: 0; margin-top: 1px; }
+.alert-error b { display: block; margin-bottom: 2px; }
+
+.form-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  border-top: 1px solid var(--line); padding-top: 20px; margin-top: 8px;
+}
+
+/* =========================================================
+   NOTIFIKASI (toast)
+   ========================================================= */
+.toast {
+  position: fixed; right: 32px; bottom: 32px; z-index: 50;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 10px;
+  background: var(--plum); color: #fff;
+  box-shadow: 0 10px 30px rgba(20, 10, 30, 0.25);
+}
+.toast svg { color: #5fd39a; }
+
+/* =========================================================
+   MODAL KONFIRMASI HAPUS
+   ========================================================= */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(22, 14, 28, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal {
+  width: 100%; max-width: 440px; padding: 24px;
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(20, 10, 30, 0.3);
+}
+.modal h3 { margin: 0 0 8px; font-size: 18px; }
+.modal p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.modal p strong { color: var(--text); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+/* =========================================================
+   HALAMAN PLACEHOLDER (untuk bagian teman tim)
+   ========================================================= */
+.placeholder {
+  max-width: 640px; padding: 32px; border: 2px dashed #cfcdd6;
+  border-radius: 12px; background: var(--white);
+}
+.placeholder h1 { margin: 0 0 6px; font-size: 24px; }
+.placeholder p { margin: 0 0 6px; color: var(--muted); }
+.placeholder code {
+  background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 13.5px; color: var(--text);
+}
+.placeholder .links { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.center-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
