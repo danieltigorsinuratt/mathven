@@ -6,21 +6,35 @@ import { useData, type Soal } from "@/lib/DataContext";
 import { CrudHeader, DeleteConfirmModal } from "@/components/crud/ui";
 
 export default function SoalPage() {
-  const { soal, materi, deleteSoal, showFlash } = useData();
+  const { soal, materi, loading, error, deleteSoal, showFlash } = useData();
   const [akanDihapus, setAkanDihapus] = useState<Soal | null>(null);
 
   const namaMateri = (materiId: number) => materi.find((m) => m.id === materiId)?.judul ?? "-";
 
-  function handleConfirmHapus() {
+  async function handleConfirmHapus() {
     if (!akanDihapus) return;
-    deleteSoal(akanDihapus.id);
-    showFlash("Soal berhasil dihapus.");
-    setAkanDihapus(null);
+    try {
+      await deleteSoal(akanDihapus.id);
+      showFlash("Soal berhasil dihapus.");
+    } catch (err) {
+      showFlash(err instanceof Error ? err.message : "Gagal menghapus soal.");
+    } finally {
+      setAkanDihapus(null);
+    }
   }
 
   return (
     <>
-      <CrudHeader title="Kelola Soal" description={`Ada ${soal.length} soal.`} buttonLabel="Tambah Soal" buttonHref="/soal/tambah" />
+      <CrudHeader title="Kelola Soal" description={loading ? "Memuat soal..." : `Ada ${soal.length} soal.`} buttonLabel="Tambah Soal" buttonHref="/soal/tambah" />
+
+      {error && (
+        <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
+          <div>
+            <b>Gagal memuat data</b>
+            {error}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <table className="table">
@@ -33,37 +47,45 @@ export default function SoalPage() {
             </tr>
           </thead>
           <tbody>
-            {soal.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={4} className="empty">
+                  Memuat data soal dari server...
+                </td>
+              </tr>
+            )}
+            {!loading && soal.length === 0 && (
               <tr>
                 <td colSpan={4} className="empty">
                   Belum ada soal. Klik Tambah Soal untuk menambahkan.
                 </td>
               </tr>
             )}
-            {soal.map((item) => (
-              <tr key={item.id}>
-                <td className="strong">{item.pertanyaan}</td>
-                <td>{item.jawaban}</td>
-                <td>
-                  <span className="tag">{namaMateri(item.materiId)}</span>
-                </td>
-                <td>
-                  <div className="row-actions">
-                    <Link href={`/soal/${item.id}/edit`} className="btn-small">
-                      Edit
-                    </Link>
-                    <button type="button" className="btn-small danger" onClick={() => setAkanDihapus(item)}>
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {!loading &&
+              soal.map((item) => (
+                <tr key={item.id}>
+                  <td className="strong">{item.pertanyaan}</td>
+                  <td>{item.jawaban}</td>
+                  <td>
+                    <span className="tag">{item.materiJudul ?? namaMateri(item.materiId)}</span>
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      <Link href={`/soal/${item.id}/edit`} className="btn-small">
+                        Edit
+                      </Link>
+                      <button type="button" className="btn-small danger" onClick={() => setAkanDihapus(item)}>
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      <DeleteConfirmModal title="Hapus Soal?" itemName={akanDihapus?.pertanyaan} isOpen={Boolean(akanDihapus)} onConfirm={handleConfirmHapus} onCancel={() => setAkanDihapus(null)} />
+      <DeleteConfirmModal title="Hapus Soal?" itemName={akanDihapus?.pertanyaan} isOpen={Boolean(akanDihapus)} onConfirm={() => void handleConfirmHapus()} onCancel={() => setAkanDihapus(null)} />
     </>
   );
 }

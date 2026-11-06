@@ -8,8 +8,12 @@ import { MateriForm } from "@/components/crud/forms";
 
 export default function EditMateriPage() {
   const { id } = useParams<{ id: string }>();
-  const { materi } = useData();
+  const { materi, loading } = useData();
   const materiLama = materi.find((item) => item.id === Number(id));
+
+  if (loading) {
+    return <CrudHeader title="Edit Materi" description="Memuat data materi..." />;
+  }
 
   if (!materiLama) {
     return (

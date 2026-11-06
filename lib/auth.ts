@@ -5,6 +5,7 @@ export function getAdminConfig() {
     email: process.env.ADMIN_EMAIL ?? "adminmathventure@gmail.com",
     password: process.env.ADMIN_PASSWORD ?? "Admin@123456",
     secret: process.env.AUTH_SECRET ?? "mathventure-dev-secret",
+    backendUrl: process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000",
   };
 }
 

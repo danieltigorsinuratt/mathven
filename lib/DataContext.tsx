@@ -1,53 +1,34 @@
 "use client";
 
-// Penyimpanan data materi, soal, dan user untuk semua halaman admin.
-// Dipakai di halaman mana pun lewat:  const { materi, soal, users } = useData();
-//
-// Catatan: data masih disimpan sementara di state React,
-// jadi kembali ke data awal kalau halaman di-refresh (tanpa database).
+// Penyimpanan & sinkronisasi data materi, soal, dan user dengan Backend API (SQLite).
+// Dipakai di halaman mana pun lewat: const { materi, soal, users, loading, error } = useData();
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type Materi = { id: number; judul: string; deskripsi: string };
-export type Soal = { id: number; materiId: number; pertanyaan: string; jawaban: string };
+export type Soal = { id: number; materiId: number; pertanyaan: string; jawaban: string; materiJudul?: string };
 export type User = { id: number; nama: string; kelas: string; sekolah: string };
 
-const initialMateri: Materi[] = [
-  { id: 1, judul: "Mengenal Bilangan", deskripsi: "Bilangan dapat diurutkan dari yang terkecil hingga terbesar dengan membandingkan nilai tempatnya. Bilangan dengan ratusan yang lebih kecil diletakkan lebih dahulu. Jadi, urutan bilangan dari yang terkecil adalah 125, 238, 341, kemudian 456." },
-  { id: 2, judul: "Nilai Tempat", deskripsi: "Mengenal satuan, puluhan, dan ratusan" },
-  { id: 3, judul: "Penjumlahan", deskripsi: "Penjumlahan bersusun hingga ratusan" },
-  { id: 4, judul: "Pengurangan", deskripsi: "Pengurangan bersusun dengan meminjam" },
-];
-
-const initialSoal: Soal[] = [
-  { id: 1, materiId: 1, pertanyaan: "456", jawaban: "Empat Ratus Lima Puluh Enam" },
-  { id: 2, materiId: 1, pertanyaan: "809", jawaban: "Delapan Ratus Sembilan" },
-  { id: 3, materiId: 2, pertanyaan: "Angka 7 pada 372 bernilai ...", jawaban: "Puluhan" },
-  { id: 4, materiId: 3, pertanyaan: "235 + 148 = ...", jawaban: "383" },
-  { id: 5, materiId: 4, pertanyaan: "502 - 267 = ...", jawaban: "235" },
-];
-
-const initialUsers: User[] = [
-  { id: 1, nama: "Eca", kelas: "3 SD", sekolah: "SD Brawijaya" },
-  { id: 2, nama: "Rafi Akbar", kelas: "3 SD", sekolah: "SD Brawijaya" },
-  { id: 3, nama: "Naura Azzahra", kelas: "2 SD", sekolah: "SDN Sumbersari 1" },
-  { id: 4, nama: "Daffa Pratama", kelas: "4 SD", sekolah: "SD Islam Malang" },
-  { id: 5, nama: "Kirana Larasati", kelas: "3 SD", sekolah: "SDN Lowokwaru 3" },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api`
+  : "/api/backend";
 
 type DataContextValue = {
   materi: Materi[];
-  addMateri: (data: Omit<Materi, "id">) => void;
-  updateMateri: (id: number, data: Omit<Materi, "id">) => void;
-  deleteMateri: (id: number) => void;
+  addMateri: (data: Omit<Materi, "id">) => Promise<void>;
+  updateMateri: (id: number, data: Omit<Materi, "id">) => Promise<void>;
+  deleteMateri: (id: number) => Promise<void>;
   soal: Soal[];
-  addSoal: (data: Omit<Soal, "id">) => void;
-  updateSoal: (id: number, data: Omit<Soal, "id">) => void;
-  deleteSoal: (id: number) => void;
+  addSoal: (data: Omit<Soal, "id">) => Promise<void>;
+  updateSoal: (id: number, data: Omit<Soal, "id">) => Promise<void>;
+  deleteSoal: (id: number) => Promise<void>;
   users: User[];
-  addUser: (data: Omit<User, "id">) => void;
-  updateUser: (id: number, data: Omit<User, "id">) => void;
-  deleteUser: (id: number) => void;
+  addUser: (data: Omit<User, "id">) => Promise<void>;
+  updateUser: (id: number, data: Omit<User, "id">) => Promise<void>;
+  deleteUser: (id: number) => Promise<void>;
+  loading: boolean;
+  error: string;
+  refreshData: () => Promise<void>;
   flash: string;
   showFlash: (message: string) => void;
   clearFlash: () => void;
@@ -55,32 +36,158 @@ type DataContextValue = {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-function nextId(list: { id: number }[]) {
-  return list.length === 0 ? 1 : Math.max(...list.map((item) => item.id)) + 1;
+async function requestJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers ?? {}),
+    },
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Gagal memproses permintaan (${res.status})`;
+    try {
+      const errBody = await res.json();
+      if (errBody?.message) errorMsg = errBody.message;
+    } catch {
+      // Gunakan pesan default bila respons bukan JSON
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json() as Promise<T>;
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [materi, setMateri] = useState(initialMateri);
-  const [soal, setSoal] = useState(initialSoal);
-  const [users, setUsers] = useState(initialUsers);
+  const [materi, setMateri] = useState<Materi[]>([]);
+  const [soal, setSoal] = useState<Soal[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const [flash, setFlash] = useState("");
+
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await requestJson<{ materi: Materi[]; soal: Soal[]; users: User[] }>(
+        `${API_BASE}/bootstrap`,
+        { cache: "no-store" }
+      );
+      setMateri(data.materi);
+      setSoal(data.soal);
+      setUsers(data.users);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Tidak dapat terhubung ke server backend. Pastikan backend berjalan di port 4000."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshData();
+  }, [refreshData]);
+
+  // ---------- Materi ----------
+  const addMateri = async (data: Omit<Materi, "id">) => {
+    const created = await requestJson<Materi>(`${API_BASE}/materi`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    setMateri((list) => [created, ...list]);
+  };
+
+  const updateMateri = async (id: number, data: Omit<Materi, "id">) => {
+    const updated = await requestJson<Materi>(`${API_BASE}/materi/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    setMateri((list) => list.map((item) => (item.id === id ? updated : item)));
+  };
+
+  const deleteMateri = async (id: number) => {
+    await requestJson<{ ok: boolean }>(`${API_BASE}/materi/${id}`, {
+      method: "DELETE",
+    });
+    setMateri((list) => list.filter((item) => item.id !== id));
+    // Karena di database menggunakan ON DELETE CASCADE, hapus juga soal terkait di state
+    setSoal((list) => list.filter((item) => item.materiId !== id));
+  };
+
+  // ---------- Soal ----------
+  const addSoal = async (data: Omit<Soal, "id">) => {
+    const created = await requestJson<Soal>(`${API_BASE}/soal`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    setSoal((list) => [created, ...list]);
+  };
+
+  const updateSoal = async (id: number, data: Omit<Soal, "id">) => {
+    const updated = await requestJson<Soal>(`${API_BASE}/soal/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    setSoal((list) => list.map((item) => (item.id === id ? updated : item)));
+  };
+
+  const deleteSoal = async (id: number) => {
+    await requestJson<{ ok: boolean }>(`${API_BASE}/soal/${id}`, {
+      method: "DELETE",
+    });
+    setSoal((list) => list.filter((item) => item.id !== id));
+  };
+
+  // ---------- Users ----------
+  const addUser = async (data: Omit<User, "id">) => {
+    const created = await requestJson<User>(`${API_BASE}/users`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    setUsers((list) => [created, ...list]);
+  };
+
+  const updateUser = async (id: number, data: Omit<User, "id">) => {
+    const updated = await requestJson<User>(`${API_BASE}/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    setUsers((list) => list.map((item) => (item.id === id ? updated : item)));
+  };
+
+  const deleteUser = async (id: number) => {
+    await requestJson<{ ok: boolean }>(`${API_BASE}/users/${id}`, {
+      method: "DELETE",
+    });
+    setUsers((list) => list.filter((item) => item.id !== id));
+  };
+
+  const clearFlash = useCallback(() => setFlash(""), []);
 
   const value: DataContextValue = {
     materi,
-    addMateri: (data) => setMateri((l) => [{ id: nextId(l), ...data }, ...l]),
-    updateMateri: (id, data) => setMateri((l) => l.map((i) => (i.id === id ? { ...i, ...data } : i))),
-    deleteMateri: (id) => setMateri((l) => l.filter((i) => i.id !== id)),
+    addMateri,
+    updateMateri,
+    deleteMateri,
     soal,
-    addSoal: (data) => setSoal((l) => [{ id: nextId(l), ...data }, ...l]),
-    updateSoal: (id, data) => setSoal((l) => l.map((i) => (i.id === id ? { ...i, ...data } : i))),
-    deleteSoal: (id) => setSoal((l) => l.filter((i) => i.id !== id)),
+    addSoal,
+    updateSoal,
+    deleteSoal,
     users,
-    addUser: (data) => setUsers((l) => [{ id: nextId(l), ...data }, ...l]),
-    updateUser: (id, data) => setUsers((l) => l.map((i) => (i.id === id ? { ...i, ...data } : i))),
-    deleteUser: (id) => setUsers((l) => l.filter((i) => i.id !== id)),
+    addUser,
+    updateUser,
+    deleteUser,
+    loading,
+    error,
+    refreshData,
     flash,
     showFlash: setFlash,
-    clearFlash: () => setFlash(""),
+    clearFlash,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

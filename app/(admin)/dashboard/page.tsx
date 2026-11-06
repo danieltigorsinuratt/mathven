@@ -1,18 +1,33 @@
-import PageHeader from "@/components/PageHeader";
+"use client";
 
-// Ganti angka ini dengan data asli dari database / API kamu.
-const STATS = [
-  { label: "Total Siswa", value: 5 },
-  { label: "Total Materi", value: 4 },
-  { label: "Total Soal", value: 5 },
-];
+import PageHeader from "@/components/PageHeader";
+import { useData } from "@/lib/DataContext";
 
 export default function DashboardPage() {
+  const { users, materi, soal, loading, error, refreshData } = useData();
+
+  const stats = [
+    { label: "Total Siswa", value: loading ? "..." : users.length },
+    { label: "Total Materi", value: loading ? "..." : materi.length },
+    { label: "Total Soal", value: loading ? "..." : soal.length },
+  ];
+
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="Ringkasan data MathVenture" />
+      <PageHeader title="Dashboard" subtitle="Ringkasan data MathVenture (Tersinkronisasi dengan Database)" />
+      {error && (
+        <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
+          <div>
+            <b>Gagal memuat data dari Backend</b>
+            <div>{error}</div>
+          </div>
+          <button type="button" className="btn btn-secondary" onClick={() => void refreshData()} style={{ marginLeft: "auto" }}>
+            Coba Lagi
+          </button>
+        </div>
+      )}
       <div className="cards">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div className="card" key={s.label}>
             <div className="card__label">{s.label}</div>
             <div className="card__value">{s.value}</div>

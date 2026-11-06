@@ -3,22 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useData, type Materi } from "@/lib/DataContext";
-import { CrudHeader, DeleteConfirmModal } from "@/components/crud/ui";
+import { CrudHeader, DeleteConfirmModal, Icon } from "@/components/crud/ui";
 
 export default function MateriPage() {
-  const { materi, deleteMateri, showFlash } = useData();
+  const { materi, loading, error, deleteMateri, showFlash } = useData();
   const [akanDihapus, setAkanDihapus] = useState<Materi | null>(null);
 
-  function handleConfirmHapus() {
+  async function handleConfirmHapus() {
     if (!akanDihapus) return;
-    deleteMateri(akanDihapus.id);
-    showFlash("Materi berhasil dihapus.");
-    setAkanDihapus(null);
+    try {
+      await deleteMateri(akanDihapus.id);
+      showFlash("Materi berhasil dihapus.");
+    } catch (err) {
+      showFlash(err instanceof Error ? err.message : "Gagal menghapus materi.");
+    } finally {
+      setAkanDihapus(null);
+    }
   }
 
   return (
     <>
-      <CrudHeader title="Kelola Materi" description={`Ada ${materi.length} materi.`} buttonLabel="Tambah Materi" buttonHref="/materi/tambah" />
+      <CrudHeader title="Kelola Materi" description={loading ? "Memuat materi..." : `Ada ${materi.length} materi.`} buttonLabel="Tambah Materi" buttonHref="/materi/tambah" iconOnly />
+
+      {error && (
+        <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
+          <div>
+            <b>Gagal memuat data</b>
+            {error}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <table className="table">
@@ -29,36 +43,44 @@ export default function MateriPage() {
             </tr>
           </thead>
           <tbody>
-            {materi.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={2} className="empty">
+                  Memuat data materi dari server...
+                </td>
+              </tr>
+            )}
+            {!loading && materi.length === 0 && (
               <tr>
                 <td colSpan={2} className="empty">
                   Belum ada materi. Klik Tambah Materi untuk menambahkan.
                 </td>
               </tr>
             )}
-            {materi.map((item) => (
-              <tr key={item.id}>
-                <td className="with-sub">
-                  <div className="cell-title">{item.judul}</div>
-                  <div className="cell-sub">{item.deskripsi}</div>
-                </td>
-                <td>
-                  <div className="row-actions">
-                    <Link href={`/materi/${item.id}/edit`} className="btn-small">
-                      Edit
-                    </Link>
-                    <button type="button" className="btn-small danger" onClick={() => setAkanDihapus(item)}>
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {!loading &&
+              materi.map((item) => (
+                <tr key={item.id}>
+                  <td className="with-sub">
+                    <div className="cell-title">{item.judul}</div>
+                    <div className="cell-sub">{item.deskripsi}</div>
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      <Link href={`/materi/${item.id}/edit`} className="btn-small btn-icon" aria-label={`Edit ${item.judul}`} title="Edit">
+                        <Icon name="pencil" size={16} />
+                      </Link>
+                      <button type="button" className="btn-small btn-icon danger" onClick={() => setAkanDihapus(item)} aria-label={`Hapus ${item.judul}`} title="Hapus">
+                        <Icon name="trash" size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      <DeleteConfirmModal title="Hapus Materi?" itemName={akanDihapus?.judul} isOpen={Boolean(akanDihapus)} onConfirm={handleConfirmHapus} onCancel={() => setAkanDihapus(null)} />
+      <DeleteConfirmModal title="Hapus Materi?" itemName={akanDihapus?.judul} isOpen={Boolean(akanDihapus)} onConfirm={() => void handleConfirmHapus()} onCancel={() => setAkanDihapus(null)} />
     </>
   );
 }

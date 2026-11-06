@@ -99,3 +99,7 @@
 .crud .modal p { margin: 0; color: var(--c-muted); font-size: 14.5px; line-height: 1.55; }
 .crud .modal p strong { color: var(--c-text); }
 .crud .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+.crud .btn-icon { justify-content: center; padding: 0; }
+.crud .btn.btn-icon { width: 40px; }
+.crud .btn-small.btn-icon { width: 34px; }

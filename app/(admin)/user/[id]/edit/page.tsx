@@ -8,8 +8,12 @@ import { UserForm } from "@/components/crud/forms";
 
 export default function EditUserPage() {
   const { id } = useParams<{ id: string }>();
-  const { users } = useData();
+  const { users, loading } = useData();
   const userLama = users.find((item) => item.id === Number(id));
+
+  if (loading) {
+    return <CrudHeader title="Edit User" description="Memuat data siswa..." />;
+  }
 
   if (!userLama) {
     return (

@@ -8,8 +8,12 @@ import { SoalForm } from "@/components/crud/forms";
 
 export default function EditSoalPage() {
   const { id } = useParams<{ id: string }>();
-  const { soal } = useData();
+  const { soal, loading } = useData();
   const soalLama = soal.find((item) => item.id === Number(id));
+
+  if (loading) {
+    return <CrudHeader title="Edit Soal" description="Memuat data soal..." />;
+  }
 
   if (!soalLama) {
     return (

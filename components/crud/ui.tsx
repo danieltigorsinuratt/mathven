@@ -5,6 +5,20 @@ import Link from "next/link";
 import { useData } from "@/lib/DataContext";
 
 const icons = {
+  pencil: (
+    <>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </>
+  ),
   plus: (
     <>
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -35,7 +49,7 @@ export function Icon({ name, size = 18 }: { name: keyof typeof icons; size?: num
 }
 
 // Judul halaman + keterangan + (opsional) tombol di kanan.
-export function CrudHeader({ title, description, buttonLabel, buttonHref }: { title: string; description?: string; buttonLabel?: string; buttonHref?: string }) {
+export function CrudHeader({ title, description, buttonLabel, buttonHref, iconOnly = false }: { title: string; description?: string; buttonLabel?: string; buttonHref?: string; iconOnly?: boolean }) {
   return (
     <div className="page-head">
       <div>
@@ -43,9 +57,9 @@ export function CrudHeader({ title, description, buttonLabel, buttonHref }: { ti
         {description && <p>{description}</p>}
       </div>
       {buttonLabel && buttonHref && (
-        <Link href={buttonHref} className="btn btn-primary">
-          <Icon name="plus" size={17} />
-          {buttonLabel}
+        <Link href={buttonHref} className={`btn btn-primary${iconOnly ? " btn-icon" : ""}`} aria-label={buttonLabel} title={buttonLabel}>
+          <Icon name="plus" size={iconOnly ? 20 : 17} />
+          {!iconOnly && buttonLabel}
         </Link>
       )}
     </div>
