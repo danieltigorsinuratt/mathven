@@ -1,6 +1,6 @@
 "use client";
 
-// Penyimpanan & sinkronisasi data materi, soal, dan user dengan Backend API (SQLite).
+// Penyimpanan & sinkronisasi data materi, soal, dan user dengan Backend API (MySQL).
 // Dipakai di halaman mana pun lewat: const { materi, soal, users, loading, error } = useData();
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
