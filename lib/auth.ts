@@ -11,7 +11,7 @@ export function getAdminConfig() {
 
 // Token sesi = SHA-256(email:secret). Dipakai di route handler dan middleware.
 export async function createSessionToken(email: string, secret: string) {
-  const data = new TextEncoder().encode(`${email}:${secret}`);
+  const data = new TextEncoder().encode(`${email.trim().toLowerCase()}:${secret}`);
   const hash = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))

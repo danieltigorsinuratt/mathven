@@ -6,7 +6,7 @@ import { useData, type Materi } from "@/lib/DataContext";
 import { CrudHeader, DeleteConfirmModal, Icon } from "@/components/crud/ui";
 
 export default function MateriPage() {
-  const { materi, loading, error, deleteMateri, showFlash } = useData();
+  const { materi, loading, error, refreshData, deleteMateri, showFlash } = useData();
   const [akanDihapus, setAkanDihapus] = useState<Materi | null>(null);
 
   async function handleConfirmHapus() {
@@ -29,7 +29,10 @@ export default function MateriPage() {
         <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
           <div>
             <b>Gagal memuat data</b>
-            {error}
+            <div>{error}</div>
+            <button type="button" className="btn btn-secondary" onClick={() => void refreshData()} style={{ marginTop: 10 }}>
+              Coba Lagi
+            </button>
           </div>
         </div>
       )}
@@ -53,7 +56,7 @@ export default function MateriPage() {
             {!loading && materi.length === 0 && (
               <tr>
                 <td colSpan={2} className="empty">
-                  Belum ada materi. Klik Tambah Materi untuk menambahkan.
+                  {error ? "Tidak dapat memuat data materi dari server." : "Belum ada materi. Klik Tambah Materi untuk menambahkan."}
                 </td>
               </tr>
             )}

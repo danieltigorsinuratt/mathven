@@ -6,7 +6,7 @@ import { useData, type User } from "@/lib/DataContext";
 import { CrudHeader, DeleteConfirmModal } from "@/components/crud/ui";
 
 export default function UserPage() {
-  const { users, loading, error, deleteUser, showFlash } = useData();
+  const { users, loading, error, refreshData, deleteUser, showFlash } = useData();
   const [akanDihapus, setAkanDihapus] = useState<User | null>(null);
 
   async function handleConfirmHapus() {
@@ -29,7 +29,10 @@ export default function UserPage() {
         <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
           <div>
             <b>Gagal memuat data</b>
-            {error}
+            <div>{error}</div>
+            <button type="button" className="btn btn-secondary" onClick={() => void refreshData()} style={{ marginTop: 10 }}>
+              Coba Lagi
+            </button>
           </div>
         </div>
       )}
@@ -55,7 +58,7 @@ export default function UserPage() {
             {!loading && users.length === 0 && (
               <tr>
                 <td colSpan={4} className="empty">
-                  Belum ada user. Klik Tambah User untuk menambahkan.
+                  {error ? "Tidak dapat memuat data siswa dari server." : "Belum ada user. Klik Tambah User untuk menambahkan."}
                 </td>
               </tr>
             )}

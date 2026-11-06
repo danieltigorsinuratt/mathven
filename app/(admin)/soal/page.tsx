@@ -6,10 +6,10 @@ import { useData, type Soal } from "@/lib/DataContext";
 import { CrudHeader, DeleteConfirmModal } from "@/components/crud/ui";
 
 export default function SoalPage() {
-  const { soal, materi, loading, error, deleteSoal, showFlash } = useData();
+  const { soal, materi, loading, error, refreshData, deleteSoal, showFlash } = useData();
   const [akanDihapus, setAkanDihapus] = useState<Soal | null>(null);
 
-  const namaMateri = (materiId: number) => materi.find((m) => m.id === materiId)?.judul ?? "-";
+  const namaMateri = (item: Soal) => materi.find((m) => m.id === item.materiId)?.judul ?? item.materiJudul ?? "-";
 
   async function handleConfirmHapus() {
     if (!akanDihapus) return;
@@ -31,7 +31,10 @@ export default function SoalPage() {
         <div className="alert-error" role="alert" style={{ marginBottom: 16 }}>
           <div>
             <b>Gagal memuat data</b>
-            {error}
+            <div>{error}</div>
+            <button type="button" className="btn btn-secondary" onClick={() => void refreshData()} style={{ marginTop: 10 }}>
+              Coba Lagi
+            </button>
           </div>
         </div>
       )}
@@ -57,7 +60,7 @@ export default function SoalPage() {
             {!loading && soal.length === 0 && (
               <tr>
                 <td colSpan={4} className="empty">
-                  Belum ada soal. Klik Tambah Soal untuk menambahkan.
+                  {error ? "Tidak dapat memuat data soal dari server." : "Belum ada soal. Klik Tambah Soal untuk menambahkan."}
                 </td>
               </tr>
             )}
@@ -67,7 +70,7 @@ export default function SoalPage() {
                   <td className="strong">{item.pertanyaan}</td>
                   <td>{item.jawaban}</td>
                   <td>
-                    <span className="tag">{item.materiJudul ?? namaMateri(item.materiId)}</span>
+                    <span className="tag">{namaMateri(item)}</span>
                   </td>
                   <td>
                     <div className="row-actions">

@@ -108,6 +108,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify(data),
     });
     setMateri((list) => list.map((item) => (item.id === id ? updated : item)));
+    setSoal((list) => list.map((item) => (item.materiId === id ? { ...item, materiJudul: updated.judul } : item)));
   };
 
   const deleteMateri = async (id: number) => {
